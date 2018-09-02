@@ -1,5 +1,6 @@
 import random
-
+import statistics
+import math
 def isfloat(s):
     try: 
         float(s)
@@ -67,6 +68,10 @@ def execute(s, v=0):
 		ci = i
 		i += 1
 		n += 1
+		for sd in alphabet:
+			if (math.isinf(variables[sd])):
+				variables[sd] = 0
+				return 0
 		if (len(l) >= 3):
 
 			if (l[0] == "set"):
@@ -131,11 +136,11 @@ def execute(s, v=0):
 			elif (l[0] == "goto"):
 				try:
 					if (isfloat(l[1]) == False):
-						if (int(variables[l[1]]) > 0 and int(variables[l[1]]) < zs):
+						if (int(variables[l[1]]) > 0 and int(variables[l[1]]) < zs and int(variables[l[1]]) != i):
 							i = int(variables[l[1]])
 							
 					else:
-						if (int(l[1]) > 0 and int(l[1]) < zs):
+						if (int(l[1]) > 0 and int(l[1]) < zs and int(l[1]) != i):
 							i = int(l[1])
 				except ValueError:
 					f = f + 1
@@ -157,27 +162,37 @@ def execute(s, v=0):
 				except ValueError:
 					f = f + 1
 			elif (l[0] == "end"):
+				
 				f += 1
 				break
 			else:
 				f += 1
 		if (v == 1):
 			print(str(ci) + "; " + s[ci] + "  \t\t"+str(variables['a'])+"\t"+str(variables['b'])+"\t"+str(variables['c'])+"\t"+str(variables['d'])+"\t"+str(variables['e'])+"\t"+str(variables['f']))
+	
+	
+	
 	score = 0
+	#score = pow(variables['a'] - 12, 2.0)
+	#if (v == 1):
+	#	print(str(score) + ", " + str(f))
+	p = n - zs
+	#return 1000 - score - pow(f, 3) - p
 	for i in alphabet:
 		score += variables[i]
 	# I want this number to be 42
 	diff = abs(42 - score)
 	if (v == 1):
 		print(str(score) + ", " + str(diff) + ", " + str(f))
-	return 1000-pow(diff, 2) - pow(f, 3)
+	return 1000-pow(diff, 2) - pow(f, 3) - p
 	
 setup()
 
-LINES_OF_CODE = 9
-PARTICIPANTS = 49
-PROGENY = 7
-TOPNUM = 7
+LINES_OF_CODE = 50
+PARTICIPANTS = 200
+PROGENY = 10
+TOPNUM = 20
+RANDOMS = 30
 
 # create the initial participants.
 
@@ -194,7 +209,7 @@ for i in range(0, PARTICIPANTS): ## Participants
 	score = execute(translate_to_code(l))#
 	participants_scores.append(score)
 
-print(participants_scores)
+#print(participants_scores)
 
 
 generation = 0
@@ -203,20 +218,36 @@ new_participants = []
 while (generation < 400):
 	max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_scores[i])[-TOPNUM:] # get the maximum scores
 	#print(max_scores)
-	print("\n\n")
-	print(""+str(generation) +", "+str(participants_scores[max_scores[len(max_scores)-1]]))
+	#print("\n\n")
+	print(""+str(generation) +", "+str(participants_scores[max_scores[len(max_scores)-1]]) + ", " + str(statistics.mean(participants_scores)) + ", " + str(statistics.median(participants_scores)))
 	ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
 
-	execute(ks, 1)
+	#execute(ks, 1)
 	
-	print("\n\n")
+	#print("\n\n")
 	new_participants_scores = []
 	new_participants = []
+	for i in range(0, RANDOMS):
+		l = []
+		for p in range(0, LINES_OF_CODE): ## Lines of code
+			q = []
+			q.append(random.randint(0, len(matchbook_a)-1))
+			q.append(random.randint(0, len(matchbook_b)-1))
+			q.append(random.randint(0, len(matchbook_c)-1))
+			l.append(q)
+			
+		new_participants.append(l)
+	
+		score = execute(translate_to_code(l))#
+		new_participants_scores.append(score)
+			
+			
 	for i in range(0, TOPNUM):
 		# max_scores[i] reproducing
 		for iu in range(0, PROGENY):
 			ds = []
 			for x in range(0, len(participants[max_scores[TOPNUM-1-i]])):
+			
 				ds.append([])
 				for y in range(0, len(participants[max_scores[TOPNUM-1-i]][0])):
 					
@@ -226,6 +257,9 @@ while (generation < 400):
 			x = random.randint(0, 2)
 			lk = random.randint(0, LINES_OF_CODE-1)
 			nm = random.randint(-1, 1)
+			if (random.randint(0, 5) == 1):
+				nm = random.randint(-3, 3)
+
 			if (iu == 0):
 				#print("TADA - " + str(participants_scores[max_scores[1-i]]))
 				#print("NO MUTATION")
@@ -234,23 +268,23 @@ while (generation < 400):
 				q = ds[lk][x]
 				ds[lk][x] += nm
 				if (ds[lk][x] < 0):
-					ds[lk][x] = q
+					ds[lk][x] = 0
 				elif (ds[lk][x] > len(matchbook_a) - 1):
-					ds[lk][x] = q
+					ds[lk][x] = len(matchbook_a)-1
 			elif (x == 1):
 				q = ds[lk][x]
 				ds[lk][x] += nm
 				if (ds[lk][x] < 0):
-					ds[lk][x] = q
+					ds[lk][x] = 0
 				elif (ds[lk][x] > len(matchbook_b) - 1):
-					ds[lk][x] = q
+					ds[lk][x] = len(matchbook_b)-1
 			elif (x == 2):
 				q = ds[lk][x]
 				ds[lk][x] += nm
 				if (ds[lk][x] < 0):
-					ds[lk][x] = q
+					ds[lk][x] = 0
 				elif (ds[lk][x] > len(matchbook_c) - 1):
-					ds[lk][x] = q
+					ds[lk][x] = len(matchbook_c)-1
 			new_participants.append(ds)
 			score = execute(translate_to_code(ds))#
 			new_participants_scores.append(float(score))
@@ -267,6 +301,7 @@ print("\n\n\n\n\n")
 max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_scores[i])[-10:] # get the maximum scores
 #print(max_scores)
 ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
-
+for i in ks:
+	print(i)
 	
 execute(ks, 1)
