@@ -26,8 +26,8 @@ def setup():
 	global z_b
 	global z_c
 	matchbook_a = ["set", "add", "mul", "div", "sub", "sdsd", "print", "goto", "ifg", "end"]
-	matchbook_b = "abcdef0123456789"
-	matchbook_c = "abcdef0123456789"
+	matchbook_b = "abcdefxy0123456789"
+	matchbook_c = "abcdefxy0123456789"
 	for i in range(0, len(matchbook_a)):
 		z_a[matchbook_a[i]] = i
 	for i in range(0, len(matchbook_b)):
@@ -50,28 +50,31 @@ def translate_to_code(coors):
 	
 	return s
 
-def execute(s, v=0):
+def execute(s, xs, ys, v=0):
 	variables = {}
 	alphabet = "abcdefghijklmnopqrstuvwxyz"
 	for i in alphabet:
 		variables[i] = 0
-		
+	variables['x'] = xs
 	# This takes an array of commands set out like "set a 1" etc.
 	zs = len(s)
 	f = 0
 	i = 0
 	n = 0
 	ci = 0
-	while (i < zs and n < 300):
-		#print(str(i) + ": " + s[i] + " /"+str(n))
+	while (i < zs and n < 100):
+		#print(str(i) + ": "+ s[i] + " /"+str(n))
 		l = s[i].split(' ')
 		ci = i
 		i += 1
 		n += 1
 		for sd in alphabet:
+			if (abs(variables[sd]) > 1000):
+				variables[sd] = 0
 			if (math.isinf(variables[sd])):
 				variables[sd] = 0
 				return 0
+			
 		if (len(l) >= 3):
 
 			if (l[0] == "set"):
@@ -168,9 +171,10 @@ def execute(s, v=0):
 			else:
 				f += 1
 		if (v == 1):
-			print(str(ci) + "; " + s[ci] + "  \t\t"+str(variables['a'])+"\t"+str(variables['b'])+"\t"+str(variables['c'])+"\t"+str(variables['d'])+"\t"+str(variables['e'])+"\t"+str(variables['f']))
+			print(str(ci) + "; " + s[ci] + "  \t\t"+str(variables['a'])+"\t"+str(variables['b'])+"\t"+str(variables['c'])+"\t"+str(variables['d'])+"\t"+str(variables['e'])+"\t"+str(variables['f'])+"\t"+str(variables['x'])+"\t"+str(variables['y']))
 	
-	
+	if (v == 2):
+		print("In: " + str(variables['x']) + ", Out: "+str(variables['y']))
 	
 	score = 0
 	#score = pow(variables['a'] - 12, 2.0)
@@ -178,17 +182,40 @@ def execute(s, v=0):
 	#	print(str(score) + ", " + str(f))
 	p = n - zs
 	#return 1000 - score - pow(f, 3) - p
-	for i in alphabet:
-		score += variables[i]
-	# I want this number to be 42
-	diff = abs(42 - score)
-	if (v == 1):
-		print(str(score) + ", " + str(diff) + ", " + str(f))
-	return 1000-pow(diff, 2) - pow(f, 3) - p
+	#for i in alphabet:
+	#	score += variables[i]
+	## I want this number to be 42
+	#diff = abs(42 - score)
+	#if (v == 1):
+	#	print(str(score) + ", " + str(diff) + ", " + str(f))
+	#return 1000-pow(diff, 2) - pow(f, 3) - p
+	return 100 - pow(ys - variables['y'], 2)
+	
+def execute_f(s, v=0):
+	score = 0
+	x = [1, 2, 3, 4, 5]
+	y = []
+	for i in x:
+		y.append(i*i*i)
+	for i in range(0, len(x)):
+		if (v == 2):
+			print("NEXT")
+			print(x[i])
+		score += execute(s, x[i], y[i], v)
+	return score
 	
 setup()
 
-LINES_OF_CODE = 50
+
+
+
+
+
+
+
+
+
+LINES_OF_CODE = 20
 PARTICIPANTS = 200
 PROGENY = 10
 TOPNUM = 20
@@ -206,22 +233,26 @@ for i in range(0, PARTICIPANTS): ## Participants
 		l.append(q)
 	participants.append(l)
 	
-	score = execute(translate_to_code(l))#
+	score = execute_f(translate_to_code(l))#
 	participants_scores.append(score)
 
 #print(participants_scores)
 
 
+
+
 generation = 0
 new_participants = []
 
-while (generation < 400):
+while (generation < 40000):
 	max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_scores[i])[-TOPNUM:] # get the maximum scores
 	#print(max_scores)
 	#print("\n\n")
 	print(""+str(generation) +", "+str(participants_scores[max_scores[len(max_scores)-1]]) + ", " + str(statistics.mean(participants_scores)) + ", " + str(statistics.median(participants_scores)))
 	ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
-
+	if (participants_scores[max_scores[len(max_scores)-1]] == 500):
+		break
+		
 	#execute(ks, 1)
 	
 	#print("\n\n")
@@ -238,7 +269,7 @@ while (generation < 400):
 			
 		new_participants.append(l)
 	
-		score = execute(translate_to_code(l))#
+		score = execute_f(translate_to_code(l))#
 		new_participants_scores.append(score)
 			
 			
@@ -286,7 +317,7 @@ while (generation < 400):
 				elif (ds[lk][x] > len(matchbook_c) - 1):
 					ds[lk][x] = len(matchbook_c)-1
 			new_participants.append(ds)
-			score = execute(translate_to_code(ds))#
+			score = execute_f(translate_to_code(ds))#
 			new_participants_scores.append(float(score))
 			#print(len(new_participants))
 			
@@ -304,4 +335,7 @@ ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
 for i in ks:
 	print(i)
 	
-execute(ks, 1)
+execute(ks, 1, 2, 1)
+execute_f(ks, 2)
+execute(ks, 9, 18, 1)
+execute(ks, 9, 18, 2)
