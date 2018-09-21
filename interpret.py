@@ -1,12 +1,13 @@
 import random
 import statistics
 import math
+import time
 def isfloat(s):
-    try: 
-        float(s)
-        return True
-    except ValueError:
-        return False
+	try:
+		float(s)
+		return True
+	except ValueError:
+		return False
 
 matchbook_a = []
 matchbook_b = []
@@ -34,7 +35,7 @@ def setup():
 		z_b[matchbook_b[i]] = i
 	for i in range(0, len(matchbook_c)):
 		z_c[matchbook_c[i]] = i
-	
+
 def translate_to_coords(s):
 	coors = []
 	for i in s:
@@ -47,10 +48,10 @@ def translate_to_code(coors):
 	s = []
 	for i in coors:
 		s.append(matchbook_a[i[0]] + " " + matchbook_b[i[1]] + " " + matchbook_c[i[2]])
-	
+
 	return s
 
-def execute(s, xs, ys, v=0):
+def execute(s, xs, ys, v=0, p=0):
 	variables = {}
 	alphabet = "abcdefghijklmnopqrstuvwxyz"
 	for i in alphabet:
@@ -74,9 +75,8 @@ def execute(s, xs, ys, v=0):
 			if (math.isinf(variables[sd])):
 				variables[sd] = 0
 				return 0
-			
-		if (len(l) >= 3):
 
+		if (len(l) >= 3):
 			if (l[0] == "set"):
 				try:
 					if (isfloat(l[1]) == False):
@@ -128,20 +128,20 @@ def execute(s, xs, ys, v=0):
 							variables[l[1]] = variables[l[1]] - float(l[2])
 				except ValueError:
 					f = f + 1
-			#elif (l[0] == "print"):
-			#	try:
-			#		if (isfloat(l[1]) == False):
-			##			print(variables[l[1]])
-			#		else:
-			#			print(l[1])
-			#	except ValueError:
-			#		f = f + 1
+			elif (l[0] == "print" and p != 0):
+				try:
+					if (isfloat(l[1]) == False):
+						print(variables[l[1]])
+					else:
+						print(l[1])
+				except ValueError:
+					f = f + 1
 			elif (l[0] == "goto"):
 				try:
 					if (isfloat(l[1]) == False):
 						if (int(variables[l[1]]) > 0 and int(variables[l[1]]) < zs and int(variables[l[1]]) != i):
 							i = int(variables[l[1]])
-							
+
 					else:
 						if (int(l[1]) > 0 and int(l[1]) < zs and int(l[1]) != i):
 							i = int(l[1])
@@ -165,17 +165,17 @@ def execute(s, xs, ys, v=0):
 				except ValueError:
 					f = f + 1
 			elif (l[0] == "end"):
-				
+
 				f += 1
 				break
 			else:
 				f += 1
 		if (v == 1):
 			print(str(ci) + "; " + s[ci] + "  \t\t"+str(variables['a'])+"\t"+str(variables['b'])+"\t"+str(variables['c'])+"\t"+str(variables['d'])+"\t"+str(variables['e'])+"\t"+str(variables['f'])+"\t"+str(variables['x'])+"\t"+str(variables['y']))
-	
+
 	if (v == 2):
 		print("In: " + str(variables['x']) + ", Out: "+str(variables['y']))
-	
+
 	score = 0
 	#score = pow(variables['a'] - 12, 2.0)
 	#if (v == 1):
@@ -190,35 +190,41 @@ def execute(s, xs, ys, v=0):
 	#	print(str(score) + ", " + str(diff) + ", " + str(f))
 	#return 1000-pow(diff, 2) - pow(f, 3) - p
 	return 100 - pow(ys - variables['y'], 2)
-	
+
 def execute_f(s, v=0):
 	score = 0
-	x = [1, 2, 3, 4, 5]
+	x = [1, 6, 10, 20, 25]
 	y = []
 	for i in x:
-		y.append(i*i*i)
+		y.append(i*i)
+	n = []
 	for i in range(0, len(x)):
 		if (v == 2):
 			print("NEXT")
 			print(x[i])
-		score += execute(s, x[i], y[i], v)
+		sss = execute(s, x[i], y[i], v)
+		score += sss
+		n.append(sss)
+	#print("\t" + str(x[0]) + ": " + str(n[0]) + ", " + str(x[1]) + ": " + str(n[1]) + ", " + str(x[2]) + ": " + str(n[2]) + ", " + str(x[3]) + ": " + str(n[3]) + ", " + str(x[4]) + ": " + str(n[4]))
 	return score
-	
+
 setup()
 
+#sssd = ["set a 1", "set b 0", "set c a", "add a b", "set b c", "print b 0", "ifg 9 a", "goto 2 0", "end 0 0"]
+
+#print(translate_to_coords(sssd))
+
+#execute(sssd, 0, 0, 0, 1)
+
+#exit(0)
 
 
 
 
-
-
-
-
-
-LINES_OF_CODE = 20
+LINES_OF_CODE = 10
 PARTICIPANTS = 200
-PROGENY = 10
-TOPNUM = 20
+PROGENY = 30
+TOPNUM = 10
 RANDOMS = 30
 
 # create the initial participants.
@@ -232,7 +238,7 @@ for i in range(0, PARTICIPANTS): ## Participants
 		q.append(random.randint(0, len(matchbook_c)-1))
 		l.append(q)
 	participants.append(l)
-	
+
 	score = execute_f(translate_to_code(l))#
 	participants_scores.append(score)
 
@@ -244,7 +250,7 @@ for i in range(0, PARTICIPANTS): ## Participants
 generation = 0
 new_participants = []
 
-while (generation < 40000):
+while (generation < 500):
 	max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_scores[i])[-TOPNUM:] # get the maximum scores
 	#print(max_scores)
 	#print("\n\n")
@@ -252,9 +258,9 @@ while (generation < 40000):
 	ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
 	if (participants_scores[max_scores[len(max_scores)-1]] == 500):
 		break
-		
+
 	#execute(ks, 1)
-	
+
 	#print("\n\n")
 	new_participants_scores = []
 	new_participants = []
@@ -266,25 +272,27 @@ while (generation < 40000):
 			q.append(random.randint(0, len(matchbook_b)-1))
 			q.append(random.randint(0, len(matchbook_c)-1))
 			l.append(q)
-			
-		new_participants.append(l)
-	
+
+
+		z = time.time()
 		score = execute_f(translate_to_code(l))#
-		new_participants_scores.append(score)
-			
-			
+		if (time.time() - z < 0.001):
+			new_participants.append(l)
+			new_participants_scores.append(score)
+
+
 	for i in range(0, TOPNUM):
 		# max_scores[i] reproducing
 		for iu in range(0, PROGENY):
 			ds = []
 			for x in range(0, len(participants[max_scores[TOPNUM-1-i]])):
-			
+
 				ds.append([])
 				for y in range(0, len(participants[max_scores[TOPNUM-1-i]][0])):
-					
+
 					ds[x].append(participants[max_scores[TOPNUM-1-i]][x][y])
 			#ds = participants[max_scores[1-i]]
-			
+
 			x = random.randint(0, 2)
 			lk = random.randint(0, LINES_OF_CODE-1)
 			nm = random.randint(-1, 1)
@@ -316,17 +324,19 @@ while (generation < 40000):
 					ds[lk][x] = 0
 				elif (ds[lk][x] > len(matchbook_c) - 1):
 					ds[lk][x] = len(matchbook_c)-1
-			new_participants.append(ds)
+			z = time.time()
 			score = execute_f(translate_to_code(ds))#
-			new_participants_scores.append(float(score))
+			if (time.time() - z < 0.001):
+				new_participants.append(ds)
+				new_participants_scores.append(float(score))
 			#print(len(new_participants))
-			
+
 	#print(new_participants_scores)
 	participants = []
 	participants = new_participants
 	participants_scores = new_participants_scores
 	generation+=1
-		
+
 print(participants_scores)
 print("\n\n\n\n\n")
 max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_scores[i])[-10:] # get the maximum scores
@@ -334,7 +344,7 @@ max_scores = sorted(range(len(participants_scores)), key=lambda i: participants_
 ks = translate_to_code(participants[max_scores[len(max_scores)-1]])
 for i in ks:
 	print(i)
-	
+
 execute(ks, 1, 2, 1)
 execute_f(ks, 2)
 execute(ks, 9, 18, 1)
