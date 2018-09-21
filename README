@@ -1,22 +1,22 @@
 A very poor attempt to make a self programming program. This contains its own scripting language and interpreter, which contains the commands;
 
-* set A B
+ * set A B
     sets the value of A to be B
-* add A B
+ * add A B
     sets the value of A to be A+B
-* mul A B
+ * mul A B
     sets the value of A to be A*B
-* div A B
+ * div A B
     sets the value of A to be A/B {for B!=0)
-* sub A B
+ * sub A B
     sets the value of A to be A-B
-* print A 0
+ * print A 0
     prints the value of A
-* goto A 0
+ * goto A 0
     goes to line A {if A is a variable, then the value referred to by A)
-* ifg A B
+ * ifg A B
     if A <= B executes next line, if not ignores it
-* end 0 0
+ * end 0 0
     ends script
 
 So a program;
